@@ -1,4 +1,4 @@
-from Themis import EventProcessor
+from Framework.Themis import EventProcessor
 import threading
 import subprocess
 

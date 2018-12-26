@@ -1,7 +1,7 @@
-from Themis import EventBroker, StatusProcessor, LogProcessor
-from PerformanceMonitor import PerformanceMonitor
-from PingMonitor import PingMonitor
-from Display import Display
+from Framework.Themis import EventBroker, StatusProcessor, LogProcessor
+from Processors.PerformanceMonitor import PerformanceMonitor
+from Processors.PingMonitor import PingMonitor
+from Processors.Display import Display
 from Tkinter import *
 
 root = Tk()
