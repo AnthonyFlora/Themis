@@ -1,44 +1,27 @@
 from Framework.Themis import EventProcessor
 import threading
 import subprocess
-from Tkinter import *
+import gtk
+import datetime
 
 
 class Display(EventProcessor):
-    def __init__(self, event_broker, host, root):
+    def __init__(self, event_broker, host):
         EventProcessor.__init__(self, event_broker)
         self.processor = self.processor + '_' + host
         self.host = host
-        self.frame = Frame(root)
-        self.frame.pack()
+        self.window = gtk.Window()
+        self.window.set_border_width(10)
         self.createWidgets()
-        self.monitor_thread = threading.Thread(target=self.monitor_thread)
-        self.monitor_thread.daemon = True
-        self.monitor_thread.start()
+        self.window.connect('destroy', gtk.main_quit)
+        self.window.show_all()
+        self.set_event_handler('log', self.on_log_event)
 
-    def say_hi(self):
-        print "hi there, everyone! XXXs"
+    def on_log_event(self, event):
+        entry = '%s : %s -> %s' % (datetime.datetime.now(), event.processor, event.entry)
+        self.label.set_text(entry)
+        print 'label updated to %s' % (entry)
 
     def createWidgets(self):
-        self.QUIT = Button(self.frame)
-        self.QUIT["text"] = "QUIT"
-        self.QUIT["fg"] = "red"
-        self.QUIT["command"] = self.frame.quit
-        self.QUIT.pack({"side": "left"})
-
-        self.hi_there = Button(self.frame)
-        self.hi_there["text"] = "Hello",
-        self.hi_there["command"] = self.say_hi
-        self.hi_there.pack({"side": "left"})
-
-    def monitor_thread(self):
-        while True:
-            self.log('monitor_thread starting..')
-            try:
-                process = subprocess.Popen(['ping', self.host], stdout=subprocess.PIPE)
-                while True:
-                    line = process.stdout.readline()
-                    if line != '':
-                        self.log(line.strip())
-            except:
-                self.log('monitor_thread stopped..')
+        self.label = gtk.Label('The quick brown fox jumps over the lazy dog')
+        self.window.add(self.label)
