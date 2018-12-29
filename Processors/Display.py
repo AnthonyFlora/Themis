@@ -1,8 +1,7 @@
 from Framework.Themis import EventProcessor
-import threading
-import subprocess
 import gtk
 import datetime
+import gobject
 
 
 class Display(EventProcessor):
@@ -19,8 +18,7 @@ class Display(EventProcessor):
 
     def on_log_event(self, event):
         entry = '%s : %s -> %s' % (datetime.datetime.now(), event.processor, event.entry)
-        self.label.set_text(entry)
-        print 'label updated to %s' % (entry)
+        gobject.idle_add(self.label.set_label, entry)
 
     def createWidgets(self):
         self.label = gtk.Label('The quick brown fox jumps over the lazy dog')
