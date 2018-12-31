@@ -21,5 +21,6 @@ class PingMonitor(EventProcessor):
                     line = process.stdout.readline()
                     if line != '':
                         self.log(line.strip())
-            except:
+            except Exception as e:
+                self.log('Exception: %s' % e)
                 self.log('monitor_thread stopped..')

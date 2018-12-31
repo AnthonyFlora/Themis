@@ -43,5 +43,6 @@ class PerformanceMonitor(EventProcessor):
                                     self.log('%s - %s' % (k, v))
                     else:
                         break
-            except:
+            except Exception as e:
+                self.log('Exception: %s' % e)
                 self.log('monitor_thread stopped..')

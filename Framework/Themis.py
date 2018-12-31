@@ -4,26 +4,28 @@ import collections
 import datetime
 import Queue
 import threading
+import collections
 
 
 # -- Core Messages ------------------------------------------------------------
 
 class Event:
     def __init__(self, topic, processor):
-        self.topic = topic
-        self.processor = processor
+        self.data = collections.defaultdict(lambda: None)
+        self.data['topic'] = topic
+        self.data['processor'] = processor
 
 
 class LogEvent(Event):
     def __init__(self, processor, entry):
         Event.__init__(self, 'log', processor)
-        self.entry = entry
+        self.data['entry'] = entry
 
 
 class StatusEvent(Event):
     def __init__(self, processor, status):
         Event.__init__(self, 'status', processor)
-        self.status = status
+        self.data['status'] = status
 
 
 # -- Core Processing ----------------------------------------------------------
@@ -57,9 +59,11 @@ class EventProcessor:
         while True:
             try:
                 event = self.event_queue.get()
-                event_handler = self.event_handlers[event.topic]
+                topic = event.data['topic']
+                event_handler = self.event_handlers[topic]
                 event_handler(event)
-            except:
+            except Exception as e:
+                self.log('Exception: %s' % e)
                 self.log('Could not process event.')
         self.status = 'OFFLINE'
         self.send_status()
@@ -79,10 +83,10 @@ class EventBroker():
         self.subscribers[topic].add(processor)
 
     def unsubscribe(self, topic, processor):
-        self.subscibers[topic].remove(processor)
+        self.subscibers.topic.remove(processor)
 
     def send(self, event):
-        for processor in self.subscribers[event.topic]:
+        for processor in self.subscribers[event.data['topic']]:
             processor.queue_event(event)
 
 
@@ -92,7 +96,7 @@ class LogProcessor(EventProcessor):
         self.set_event_handler('log', self.on_log_event)
 
     def on_log_event(self, event):
-        print '%s : %s -> %s' % (datetime.datetime.now(), event.processor, event.entry)
+        print '%s : %s -> %s' % (datetime.datetime.now(), event.data['processor'], event.data['entry'])
 
 
 class StatusProcessor(EventProcessor):
@@ -101,4 +105,6 @@ class StatusProcessor(EventProcessor):
         self.set_event_handler('status', self.on_status_event)
 
     def on_status_event(self, event):
-        self.log('Got status - %s %s' % (event.processor, event.status))
+        processor = event.data['processor']
+        status = event.data['status']
+        self.log('Got status - %s %s' % (processor, status))
