@@ -4,6 +4,7 @@ from Processors.PingMonitor import PingMonitor
 from Processors.Display import Display
 from Processors.MqttAdapter import  MqttAdapter
 import gtk, gobject
+import time
 
 event_broker = EventBroker()
 status_processor = StatusProcessor(event_broker)
@@ -16,11 +17,12 @@ display = Display(event_broker, 'localhost')
 
 mqtt_adapter = MqttAdapter(event_broker, 'iot.eclipse.org', '1883')
 ms = Event('mqtt_subscription_request', 'main')
-ms.data['mqtt_topic'] = '#'
+ms.data['mqtt_topic'] = 'hyperion/test'
 event_broker.send(ms)
-me = Event('mqtt_send_request', 'main')
-me.data['a'] = 'moo'
-me.data['b'] = 'cow'
+
+time.sleep(5.0)
+me = Event('hyperion/test', 'main')
+me.data['aa'] = 'cow'
 event_broker.send(me)
 
 gobject.threads_init()

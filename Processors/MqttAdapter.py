@@ -10,7 +10,6 @@ class MqttAdapter(EventProcessor):
         self.host = 'moo'
         self.processor = self.processor + '_' + self.host
         self.set_event_handler('mqtt_subscription_request', self.on_mqtt_subscribe_event)
-        self.set_event_handler('mqtt_send_request', self.on_mqtt_send_event)
         self.mqtt_addr = mqtt_addr
         self.mqtt_subscriptions = set()
         self.mqtt_client = mqtt.Client()
@@ -22,13 +21,14 @@ class MqttAdapter(EventProcessor):
 
     def on_mqtt_subscribe_event(self, event):
         mqtt_topic = event.data['mqtt_topic']
+        self.set_event_handler(event.data['mqtt_topic'], self.on_mqtt_send_event)
         self.mqtt_subscriptions.add(mqtt_topic)
         self.mqtt_client.subscribe(mqtt_topic)
         self.log('Subscribed to %s' % (mqtt_topic))
 
     def on_mqtt_send_event(self, event):
-        topic = event.data['topic']
-        self.mqtt_client.publish(topic, json.dumps(event.data))
+        if self.processor != event.data['processor']:
+            self.mqtt_client.publish(event.data['topic'], json.dumps(event.data))
 
     def on_mqtt_connect(self, client, userdata, flags, rc):
         self.log('Connected with code %s' % (rc))
@@ -36,12 +36,13 @@ class MqttAdapter(EventProcessor):
             self.mqtt_client.subscribe(topic)
 
     def on_mqtt_receive(self, client, userdata, message):
-        self.log(message.topic)
         event = Event(message.topic, self.processor)
         try:
             event.data.update(json.loads(message.payload))
+            event.data['processor'] = self.processor
             self.event_broker.send(event)
         except Exception as e:
+            self.log('Exception: %s' % (e))
             self.log('Could not decode: %s' % str(message.payload))
 
     def mqtt_thread(self):
