@@ -38,8 +38,11 @@ class MqttAdapter(EventProcessor):
     def on_mqtt_receive(self, client, userdata, message):
         self.log(message.topic)
         event = Event(message.topic, self.processor)
-        event.data.update(json.loads(message.payload))
-        self.event_broker.send(event)
+        try:
+            event.data.update(json.loads(message.payload))
+            self.event_broker.send(event)
+        except Exception as e:
+            self.log('Could not decode: %s' % str(message.payload))
 
     def mqtt_thread(self):
         while True:

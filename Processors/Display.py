@@ -17,7 +17,9 @@ class Display(EventProcessor):
         self.set_event_handler('log', self.on_log_event)
 
     def on_log_event(self, event):
-        entry = '%s : %s -> %s' % (datetime.datetime.now(), event.processor, event.entry)
+        processor = event.data['processor']
+        log_entry = event.data['entry']
+        entry = '%s : %s -> %s' % (datetime.datetime.now(), processor, log_entry)
         gobject.idle_add(self.label.set_label, entry)
 
     def createWidgets(self):
