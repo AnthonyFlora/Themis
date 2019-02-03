@@ -28,6 +28,12 @@ class StatusEvent(Event):
         self.data['status'] = status
 
 
+class MqttSubscriptionRequestEvent(Event):
+    def __init__(self, processor, topic):
+        Event.__init__(self, 'mqtt_subscription_request', processor)
+        self.data['mqtt_topic'] = topic
+
+
 # -- Core Processing ----------------------------------------------------------
 
 class EventProcessor:
